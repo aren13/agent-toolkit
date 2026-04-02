@@ -7,9 +7,12 @@ A collection of scripts and utilities for setting up and managing infrastructure
 ## Table of Contents
 
 - [Overview](#overview)
+- [Conventions](#conventions)
 - [Prerequisites](#prerequisites)
+- [Project Structure](#project-structure)
 - [Scripts](#scripts)
   - [mbp-server-setup.sh](#mbp-server-setupsh)
+- [Skills](#skills)
 - [Installation](#installation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -19,6 +22,19 @@ A collection of scripts and utilities for setting up and managing infrastructure
 ## Overview
 
 Agent Toolkit provides battle-tested automation scripts for turning consumer hardware into reliable, always-on infrastructure. The primary use case is preparing machines to host AI agents, development servers, and home lab services that require persistent uptime and remote access.
+
+## Conventions
+
+This project follows a strict **convention-over-configuration** philosophy. All naming -- skills, commands, files, folders, SQL, documentation -- uses the same pattern:
+
+```
+{domain}            -- Reference/knowledge (e.g., /git)
+{domain}-{action}   -- Executable action (e.g., /git-commit)
+```
+
+See [CONVENTIONS.md](CONVENTIONS.md) for the full specification, domain prefix registry, and examples.
+
+---
 
 ## Prerequisites
 
@@ -103,6 +119,35 @@ The daemon auto-restarts on crash and persists across reboots. Logs are written 
 - Keep the lid slightly open or use a stand for better thermals
 - Set up a VPN (Tailscale, WireGuard, or ZeroTier) for remote access outside LAN
 - Enable auto-login: **System Settings > Users > Login Options > Auto Login**
+
+---
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/aren13/agent-toolkit.git
+cd agent-toolkit
+```
+
+---
+
+## Project Structure
+
+```
+agent-toolkit/
+  scripts/            -- Automation and setup scripts
+  skills/             -- Claude Code skills following {domain}-{action} convention
+  CONVENTIONS.md      -- Universal naming convention specification
+  README.md           -- This file
+```
+
+## Skills
+
+Skills follow the `{domain}-{action}` naming convention. The bare domain name (`git`, `doc`) is a reference skill containing standards and rules. Domain-prefixed names (`git-commit`, `doc-create`) are action skills that execute workflows using those standards.
+
+See [CONVENTIONS.md](CONVENTIONS.md) for the full pattern and domain prefix registry.
 
 ---
 
