@@ -15,7 +15,7 @@
 
 ## Testing Philosophy
 
-Rails uses Minitest. It's fast, simple, and built in. Don't add RSpec unless the project already uses it.
+Rails uses Minitest. It's fast, simple, and built in. Don't add RSpec unless the project already uses it. Use fixtures over factories -- they're deterministic, preloaded into the test database with no runtime object creation overhead.
 
 **What to test:**
 - Every model validation, scope, and business method
@@ -23,12 +23,24 @@ Rails uses Minitest. It's fast, simple, and built in. Don't add RSpec unless the
 - Critical user flows with system tests (registration, checkout, core features)
 - Edge cases and security boundaries
 
+**Rules:**
+- Tests ship with features in the same commit
+- Security fixes always include regression tests
+- WebMock must remain enabled -- no real HTTP in tests
+- Use VCR cassettes for outbound API calls; use JSON captures for inbound webhooks
+
 **What NOT to test:**
 - Framework behavior (Active Record saves, routing works)
 - Private methods directly — test through public interface
 - Trivial methods with no logic
 
 **Test behavior, not implementation.** Assert outcomes, not that specific methods were called.
+
+**Antipatterns to avoid:**
+- No `sleep` in tests -- use `travel_to` for time-dependent logic
+- No HTML-structure-coupled selectors -- use `data-test-id` attributes
+- No shared mutable state between tests
+- No stubbing the system under test
 
 ---
 
@@ -278,6 +290,15 @@ class ArticlesTest < ApplicationSystemTestCase
 
     assert_text "Updated via Turbo"
     assert_no_selector "form"  # Form should be replaced by show content
+  end
+
+  # Use data-test-id for stable selectors that don't break on markup changes
+  test "displays user stats" do
+    sign_in users(:alice)
+    visit dashboard_path
+    within "[data-test-id='user-stats']" do
+      assert_text "10 articles"
+    end
   end
 end
 ```

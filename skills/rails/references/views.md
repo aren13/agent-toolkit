@@ -120,6 +120,18 @@ Partials are the component system in Rails. They're files prefixed with `_` but 
 <%= render(@articles) || render("empty_state") %>
 ```
 
+### Strict Locals
+
+All partials must declare their variables on the first line using strict locals. Do not rely on instance variables in shared partials. Do not use `**locals` splat.
+
+```erb
+<%# locals: (title:, description:, card: nil) %>
+
+<h2><%= title %></h2>
+<p><%= description %></p>
+<%= render "cards/preview", card: card if card %>
+```
+
 ### Partial Locals
 
 Always pass data to partials via locals, not instance variables:

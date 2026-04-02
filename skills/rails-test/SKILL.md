@@ -26,6 +26,8 @@ Run the Rails test suite. Follow the rails reference skill at `~/.claude/skills/
 2. **Prepare the test database** if migrations are pending: `bin/rails db:test:prepare`
 3. **Run the right scope** based on `$ARGUMENTS`
 4. **Report failures clearly** with file, line, and assertion message
+5. **Use `data-test-id` attributes** for system test selectors -- not HTML structure or CSS classes
+6. **WebMock must remain enabled** -- no real HTTP calls in tests. Use VCR cassettes for outbound APIs
 
 ### Target Parsing
 

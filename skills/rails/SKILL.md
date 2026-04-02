@@ -18,6 +18,31 @@ triggers:
 
 You write world-class Ruby on Rails code. Every decision flows from the Rails Doctrine -- the philosophical foundation that has made Rails the most productive web framework for two decades.
 
+## Execution Workflow
+
+1. **Inspect** the codebase before proposing changes.
+2. **Match** existing conventions unless the user requests a migration.
+3. **Use Rails conventions** and plain Ruby first.
+4. **Prefer small, reversible changes** with tests.
+5. **Report tradeoffs** explicitly when choosing architecture.
+
+### Mandatory Codebase Scan
+
+Always read these files first when available:
+
+- `Gemfile` — Rails version, gems, queue backend
+- `config/application.rb` — load defaults, framework config
+- `config/routes.rb` — routing patterns, namespace style
+- `config/environments/*.rb` — at least the target env
+- `app/models/` — 2-5 representative models
+- `app/controllers/` — 2-5 representative controllers
+- `test/` or `spec/` — test framework and style
+- Deploy entrypoints: `Procfile*`, `bin/jobs`, `config/deploy*.yml`, CI config
+
+Record and follow observed patterns for: test framework, auth style, frontend stack, queue backend, API conventions.
+
+---
+
 ## The Nine Pillars
 
 These aren't suggestions. They are the operating system for every line of code you write.
@@ -84,10 +109,10 @@ Respect existing patterns in the codebase. Don't rewrite working code to match y
 
 ```
 Request -> Routes -> Controller -> Model -> View -> Response
-                        |            ^
-                   Service/Form   Helpers/Partials
-                        |
-                  Background Job -> Mailer / Cable
+                                     ^
+                              Helpers/Partials
+                                     |
+                          Background Job -> Mailer / Cable
 ```
 
 ### Models (The Domain)
@@ -99,22 +124,25 @@ Models are the heart. They own business logic, validations, associations, scopes
 Key principles:
 - Rich models with focused concerns -- decompose with `ActiveSupport::Concern` when a model grows beyond ~200 lines
 - Validate at the model level, constrain at the database level (belt and suspenders)
-- Use scopes for reusable query logic, not class methods
+- Use scopes for reusable query logic, not class methods -- name scopes for business concepts (`active`, `unassigned`), not SQL operations
+- Model state as records, not booleans -- a `Closure` record captures who/when/why; a `closed` boolean doesn't
+- POROs live under model namespaces (`Event::Description`) -- no `*Service`, `*Manager`, `*Handler` suffixes
 - Prevent N+1 queries with `includes`, `preload`, or `eager_load`
 - Use `strict_loading` in development to catch lazy loading
 - Prefer `has_many :through` over `has_and_belongs_to_many` -- the join model almost always needs attributes later
 
 ### Controllers (The Orchestrator)
 
-Controllers receive requests, ask models for data, and render responses. They should be thin -- typically under 10 lines per action.
+Controllers authenticate, authorize, parse input, delegate to models, and return a response. Nothing more. Typically under 10 lines per action.
 
 **Read `references/controllers.md` when working with**: controllers, routing, strong parameters, filters, flash messages, session management, or API endpoints.
 
 Key principles:
 - Stick to the 7 RESTful actions: `index`, `show`, `new`, `create`, `edit`, `update`, `destroy`
-- When you need actions beyond the 7, extract a new resource controller (e.g., `PostsController#publish` -> `Post::PublicationsController#create`)
-- Use `before_action` for authentication/authorization and resource loading
-- Strong parameters via `params.expect` (Rails 8+) -- never `params.permit!`
+- When you need actions beyond the 7, model the verb as a noun resource (e.g., `close` -> `resource :closure`, `publish` -> `resource :publication`)
+- Thin controllers invoke rich domain models directly -- no service layer between them
+- Strong parameters via `params.expect` (Rails 8+) -- returns 400 on bad params, not 500. Never `params.permit!`
+- No query logic (`.where`, `.order`, `.joins`) in controllers or views -- push it into model scopes
 - One instance variable per action when possible -- the view shouldn't need to understand controller internals
 - Respond to HTML by default, Turbo Stream when enhancing
 
@@ -177,7 +205,7 @@ When facing a design decision, evaluate in this order:
 | Multi-element update | Turbo Streams | JSON API + JS rendering |
 | Real-time updates | Turbo Streams over Action Cable | Polling / third-party WS |
 | JS behavior | Stimulus controller | jQuery / vanilla event listeners |
-| Background work | Solid Queue (Active Job) | Sidekiq (unless Redis already in stack) |
+| Background work | Detect backend: adapter config → Gemfile → runtime commands | Assuming Solid Queue without checking |
 | Caching | Solid Cache (Rails.cache) | Redis (unless already in stack) |
 | WebSockets | Solid Cable (Action Cable) | Socket.io / Pusher |
 | File uploads | Active Storage | CarrierWave / Shrine |
@@ -255,6 +283,77 @@ app/
 - Background jobs for anything that doesn't need immediate response
 - Database indexes on every foreign key and frequently queried column
 - Use `explain` to understand query plans for slow queries
+
+---
+
+## Background Job Backend Policy
+
+Never assume Solid Queue just because the app is Rails 8. Detect backend in this order:
+
+1. `config.active_job.queue_adapter` setting
+2. `Gemfile` gems (`good_job`, `solid_queue`, `sidekiq`, others)
+3. Worker runtime commands and deployment wiring (`Procfile`, `bin/jobs`)
+
+Rules:
+- If `good_job` is active, keep `good_job` conventions
+- If `solid_queue` is active, keep `solid_queue` conventions
+- If both gems exist, treat the configured adapter as authoritative
+- Do not migrate queue backend implicitly as part of unrelated tasks
+- Write backend-agnostic `ApplicationJob` code unless backend features are explicitly requested
+- Set `enqueue_after_transaction_commit = true` -- fix root causes, not symptoms
+
+---
+
+## Fail-Fast Policy
+
+- Use `save!`, `create!`, `update!` in jobs and POROs -- silent failures are invisible until data is corrupt
+- Use `find_by!` and `fetch` over `find_by` and `[]` when nil is unexpected
+- Rescue only specific exceptions with intentional handling -- never bare `rescue`
+- Avoid defensive patterns that hide errors: `respond_to?`, `try`, dynamic `send`
+- In controllers, `save` (without `!`) is acceptable for form validation flows where you re-render on failure
+- Wrap multi-step mutations in transactions
+
+---
+
+## Code Quality Gates
+
+| Metric | Threshold |
+|--------|-----------|
+| Class size | <200 lines |
+| Public methods per class | <15 |
+| Private methods per class | <7 |
+| Method size | <10 lines preferred, <20 hard limit |
+| Nesting depth | <2 levels |
+| Method parameters | <3 (use keyword args or parameter objects beyond) |
+| Concern size | 50-150 lines, one capability each |
+
+---
+
+## Authentication Patterns
+
+Prefer Rails 8 built-in authentication. When implementing custom auth:
+
+- Use `has_secure_password` with bcrypt
+- Follow 37signals naming: `Identity` (global email-based), `User` (per-account membership), `Session`
+- Rate limit authentication endpoints aggressively
+- Store sessions via signed cookies with `httponly` and `same_site: :lax`
+- `reset_session` before setting session data to prevent session fixation
+
+---
+
+## Output Contract
+
+**For implementation tasks**, produce:
+1. Required schema changes with migrations
+2. Model/controller/view/job code following local conventions
+3. Tests matching local framework
+4. Brief risk notes (security, performance, rollout concerns)
+
+**For review tasks**, prioritize:
+1. Correctness and behavioral regressions
+2. Security and data integrity
+3. Performance and operability
+4. Test gaps
 
 ---
 

@@ -42,6 +42,18 @@ Turbo Drive intercepts all link clicks and form submissions, fetching the new pa
 ```erb
 <%# In layout head %>
 <meta name="turbo-prefetch" content="true">  <%# Enabled by default since Turbo 8 %>
+<meta name="turbo-refresh-method" content="morph">  <%# Smart diff-based page updates %>
+<meta name="turbo-refresh-scroll" content="preserve">  <%# Keep scroll position on refresh %>
+```
+
+### Persistent Elements
+
+Use `data-turbo-permanent` on elements that should survive across page navigations (audio players, chat widgets, notification badges):
+
+```erb
+<div id="audio-player" data-turbo-permanent>
+  <%# This element persists across Turbo navigations %>
+</div>
 ```
 
 ### Controlling Turbo Drive
@@ -236,6 +248,18 @@ end
 </div>
 ```
 
+### Multi-Tenant Broadcast Scoping
+
+In multi-tenant apps, always scope broadcasts by account to prevent data leaking across tenants:
+
+```ruby
+# Bad — global broadcast
+after_create_commit -> { broadcast_append_to "messages" }
+
+# Good — scoped to account
+after_create_commit -> { broadcast_append_to [account, "messages"], target: "messages" }
+```
+
 ### When to Use Streams
 
 - Form creates a new item → append/prepend it to the list
@@ -354,12 +378,13 @@ Some elements have default events you don't need to specify:
 
 1. **One behavior per controller** — `dropdown`, `clipboard`, `auto-submit`, not `form-utils`
 2. **Compose multiple controllers** on one element when needed: `data-controller="dropdown auto-save"`
-3. **Use values for state** — they sync with HTML data attributes and trigger change callbacks
+3. **Use values for state** — they sync with HTML data attributes and trigger change callbacks. Use Values API, not `getAttribute()`
 4. **Use targets for DOM references** — not `querySelector`
-5. **Clean up in `disconnect()`** — remove event listeners, timers, observers
+5. **Clean up in `disconnect()`** — remove event listeners, timers, observers. Extract shared helpers to modules
 6. **Keep controllers small** — 50 lines is good, 100 is the soft limit
 7. **Use CSS classes parameter** for configurable styling
 8. **Use outlets** to communicate between controllers (not custom events unless broadcasting)
+9. **Progressive installation** — show interactive UI only after JS loads using CSS `[data-controller]` selectors
 
 ---
 

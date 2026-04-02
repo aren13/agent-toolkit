@@ -53,7 +53,9 @@ After generating, review the output and fix:
 - Add missing `null: false` constraints in migrations
 - Add missing indexes on foreign keys
 - Ensure model validations match database constraints
-- Verify routes are RESTful
+- Verify routes are RESTful -- model verbs as noun resources (e.g., `close` -> `resource :closure`)
+- Add strict locals declaration to generated partials: `<%# locals: (var:) %>`
+- Ensure `dependent:` is declared on all `has_many`/`has_one` associations
 
 ### Output
 

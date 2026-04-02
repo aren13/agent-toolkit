@@ -50,6 +50,8 @@ end
 
 Since Rails 5, `belongs_to` validates presence by default. Use `optional: true` to allow nil.
 
+Always declare explicit `dependent` behavior on `has_many` and `has_one`. Use `dependent: :delete_all` when callbacks are not needed (faster than `:destroy`).
+
 ### has_many
 
 Declares one-to-many. Always plural.
@@ -211,19 +213,22 @@ class User < ApplicationRecord
   # Generating tokens
   has_secure_token :api_key
 
-  # Setting defaults
+  # Setting defaults via lambda
+  attribute :role, default: -> { "member" }
+  attribute :creator, default: -> { Current.user }
+
+  # Or via after_initialize
   after_initialize :set_defaults, if: :new_record?
 
   private
 
   def set_defaults
-    self.role ||= "member"
     self.locale ||= "en"
   end
 end
 ```
 
-**Avoid:** Callbacks that send emails, enqueue jobs, or modify other models. Use `after_commit` if you must, or better — do it explicitly in the controller/service.
+**Avoid:** Callbacks that send emails, enqueue jobs, or modify other models. Use `after_commit` if you must, or better — do it explicitly in the model's public API.
 
 ### Callback Order
 
@@ -235,14 +240,21 @@ end
 
 ### Scopes
 
-Scopes are chainable, reusable query fragments. Prefer scopes over class methods for query logic.
+Scopes are chainable, reusable query fragments. Prefer scopes over class methods for query logic. Name scopes for business concepts, not SQL operations:
 
 ```ruby
 class Article < ApplicationRecord
+  # Good — business concepts
   scope :published, -> { where(published: true) }
   scope :recent, -> { order(published_at: :desc) }
   scope :by_author, ->(author) { where(author: author) }
   scope :featured, -> { published.where(featured: true).recent }
+  scope :active, -> { where.missing(:pop) }
+  scope :unassigned, -> { where.missing(:assignments) }
+
+  # Bad — SQL operations as names
+  # scope :without_pop, -> { ... }
+  # scope :no_assignments, -> { ... }
 
   # With date logic
   scope :this_week, -> { where(created_at: 1.week.ago..) }
@@ -402,7 +414,7 @@ SQL
 
 ## Concerns
 
-Use concerns to extract cohesive chunks of behavior from models that grow large. A concern should represent a single, well-named concept.
+Use concerns to extract cohesive chunks of behavior from models that grow large. Each concern should be 50-150 lines, self-contained, and named for the capability it provides (`Closeable`, `Watchable`, `Searchable`). Extract when the same behavior appears across 3+ models.
 
 ```ruby
 # app/models/concerns/searchable.rb
@@ -464,13 +476,113 @@ Normalizations run before validation and on finder methods — `User.find_by(ema
 
 ---
 
+## State as Records
+
+Prefer state records over boolean columns. A `Closure` record captures who, when, and why. A `closed` boolean captures nothing.
+
+```ruby
+module Card::Closeable
+  extend ActiveSupport::Concern
+
+  included do
+    has_one :closure, dependent: :destroy
+    scope :closed, -> { joins(:closure) }
+    scope :open, -> { where.missing(:closure) }
+  end
+
+  def closed? = closure.present?
+
+  def close(user: Current.user)
+    return if closed?
+    transaction do
+      create_closure!(user: user)
+      track_event(:closed, creator: user)
+    end
+  end
+
+  def reopen(user: Current.user)
+    return unless closed?
+    transaction do
+      closure&.destroy
+      track_event(:reopened, creator: user)
+    end
+  end
+end
+```
+
+---
+
+## POROs Under Model Namespaces
+
+POROs live under model namespaces for related logic that does not need persistence. They are model-adjacent, not controller-adjacent.
+
+```ruby
+# app/models/event/description.rb
+class Event::Description
+  attr_reader :event
+
+  def initialize(event)
+    @event = event
+  end
+
+  def to_s
+    case event.action
+    when "created"  then "#{creator_name} created this card"
+    when "closed"   then "#{creator_name} closed this card"
+    else "#{creator_name} updated this card"
+    end
+  end
+
+  private
+    def creator_name = event.creator.name
+end
+```
+
+Do not use `*Service`, `*Manager`, or `*Handler` suffixes. Use domain nouns. Decision heuristic: start with a model method, then a concern (3+ models), then a PORO with a domain noun.
+
+---
+
+## Job Naming Convention
+
+When a model method enqueues a job that calls back into the same class, use `_later` for the async version and `_now` for the synchronous version:
+
+```ruby
+module Event::Relaying
+  extend ActiveSupport::Concern
+
+  included do
+    after_create_commit :relay_later
+  end
+
+  def relay_later
+    Event::RelayJob.perform_later(self)
+  end
+
+  def relay_now
+    # actual work
+  end
+end
+
+class Event::RelayJob < ApplicationJob
+  def perform(event)
+    event.relay_now
+  end
+end
+```
+
+Jobs should be shallow -- they delegate to model methods, not contain business logic.
+
+---
+
 ## Anti-Patterns to Avoid
 
 1. **God Models** — If a model exceeds ~200 lines, decompose with concerns
 2. **Callback Hell** — Chains of callbacks that trigger other callbacks. Prefer explicit orchestration
 3. **N+1 in Views** — Always eager-load associations the view will access
-4. **Missing Database Constraints** — Model validations can be bypassed. Critical constraints belong in the database
+4. **Missing Database Constraints** — Model validations can be bypassed. Critical constraints belong in the database. Prefer database constraints over AR validations for data integrity
 5. **Integer Enums** — One accidental reorder breaks everything. Use strings
 6. **Skip-Validation Methods** — `update_column`, `update_all`, `delete` bypass validations and callbacks. Use them only when you explicitly need to skip them and understand the consequences
 7. **Business Logic in Callbacks** — Sending emails, creating audit logs, or modifying other models in `after_save` is fragile. Do it explicitly
 8. **Overusing STI** — If subclasses have very different columns, use delegated types or separate tables
+9. **Boolean State Columns** — Use state-as-records instead (see above)
+10. **Silent Failures** — Use `save!`, `create!`, `update!` in jobs and POROs. Use `find_by!` and `fetch` when nil is unexpected

@@ -208,7 +208,15 @@ add_index :articles, :metadata, using: :gin  # GIN for JSONB
 
 ### Query Optimization
 
+Do work in SQL, not Ruby. Pre-compute at write time when possible.
+
 ```ruby
+# Bad — filtering in Ruby
+User.all.select { |u| u.active? }
+
+# Good — filtering in SQL
+User.where(active: true)
+
 # Use pluck when you only need specific values (avoids AR object instantiation)
 User.where(active: true).pluck(:email)  # Returns ["a@b.com", "c@d.com"]
 
@@ -218,11 +226,14 @@ User.select(:id, :name, :email).where(active: true)
 # Use exists? instead of any?/present? for existence checks
 User.where(email: params[:email]).exists?  # SELECT 1 ... LIMIT 1
 
-# Use find_each for batch processing
+# Use find_each for batch processing (not .each on large sets)
 User.find_each(batch_size: 1000) { |user| process(user) }
 
 # Use explain to analyze slow queries
 Article.where(published: true).order(:created_at).explain
+
+# Pre-compute at write time — counter caches, roll-ups, denormalized columns
+# are faster reads than computing on every request
 ```
 
 ### PostgreSQL-Specific Optimizations
@@ -268,6 +279,15 @@ ProcessOrderJob.perform_later(order)
 ProcessOrderJob.set(wait: 1.hour).perform_later(order)
 ProcessOrderJob.set(queue: :critical).perform_later(order)
 ```
+
+### Job Design Principles
+
+- **Shallow jobs** — jobs delegate to model methods, they don't contain business logic
+- **Idempotent** — safe to retry without side effects
+- **Serializable args** — pass IDs or GlobalID, not complex objects
+- **Bounded retries** — always set `retry_on` with `attempts:` limit
+- **Transaction-safe** — set `enqueue_after_transaction_commit = true` to avoid enqueueing before the data is committed
+- **Explicit timeouts** — always set timeouts on HTTP calls inside jobs
 
 ### What Belongs in Background Jobs
 
@@ -363,3 +383,20 @@ config.cache_store = :solid_cache_store
 config.active_job.queue_adapter = :solid_queue
 config.action_cable.adapter = :solid_cable
 ```
+
+### Puma + Database Pool Tuning
+
+Tune Puma workers/threads and database pool size together. The database pool must be >= the thread count:
+
+```ruby
+# config/puma.rb
+workers ENV.fetch("WEB_CONCURRENCY") { 2 }
+threads_count = ENV.fetch("RAILS_MAX_THREADS") { 3 }
+threads threads_count, threads_count
+
+# config/database.yml
+production:
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 3 } %>
+```
+
+Verify production-like performance before broad rollout. Measure queue latency and failure rates.

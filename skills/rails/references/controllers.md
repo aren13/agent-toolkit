@@ -69,16 +69,28 @@ class ArticlesController < ApplicationController
 end
 ```
 
-### Beyond 7 Actions: Extract New Controllers
+### Beyond 7 Actions: Model Verbs as Noun Resources
 
-When you need additional actions, it usually means you have a new resource:
+When an action doesn't map to a standard CRUD verb, turn the verb into a noun and create a new resource:
+
+| Verb | Noun Resource | Route |
+|------|--------------|-------|
+| close | closure | `resource :closure` |
+| publish | publication | `resource :publication` |
+| watch | watching | `resource :watching` |
+| pin | pin | `resource :pin` |
 
 ```ruby
-# Instead of:
-# POST /articles/:id/publish  →  ArticlesController#publish
+# Bad
+resources :cards do
+  post :close
+  post :reopen
+end
 
-# Do:
-# POST /articles/:id/publication  →  Articles::PublicationsController#create
+# Good
+resources :cards do
+  resource :closure      # POST to close, DELETE to reopen
+end
 
 # config/routes.rb
 resources :articles do
@@ -103,11 +115,13 @@ module Articles
 end
 ```
 
+Thin controllers invoke rich domain models directly. No service layer between them.
+
 ---
 
 ## Strong Parameters
 
-Always use `params.expect` (Rails 8+) for mass assignment protection:
+Always use `params.expect` (Rails 8+) for mass assignment protection. Unlike `params.require`/`permit`, `params.expect` returns 400 (Bad Request) for malformed params instead of 500 (Internal Server Error):
 
 ```ruby
 # Simple
@@ -341,6 +355,24 @@ end
 Current.user
 ```
 
+### No Query Logic in Controllers
+
+Push `.where`, `.order`, `.joins` into model scopes. Controllers orchestrate, they don't query:
+
+```ruby
+# Bad — query logic in controller
+def index
+  @articles = Article.where(published: true).order(created_at: :desc).joins(:author)
+end
+
+# Good — model scope
+def index
+  @articles = Article.published.recent.includes(:author)
+end
+```
+
+Never store Active Record objects in sessions -- store IDs and reload.
+
 ### Scoping Queries to Current User
 
 Always scope data access through the authenticated user:
@@ -351,6 +383,28 @@ Always scope data access through the authenticated user:
 
 # BAD — any user can access any project
 @project = Project.find(params[:id])
+```
+
+### Authorization Pattern
+
+Controller checks permission via `before_action`. Model defines what permission means:
+
+```ruby
+class CardsController < ApplicationController
+  before_action :authorize_card!, only: %i[edit update destroy]
+
+  private
+
+  def authorize_card!
+    redirect_to root_path, alert: "Not authorized." unless @card.administerable_by?(current_user)
+  end
+end
+
+class Card < ApplicationRecord
+  def administerable_by?(user)
+    user.admin? || creator == user
+  end
+end
 ```
 
 ### Controller Concerns

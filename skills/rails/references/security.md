@@ -282,6 +282,104 @@ end
 
 ---
 
+## SSRF Protection
+
+When fetching user-provided URLs, prevent Server-Side Request Forgery:
+
+```ruby
+# Resolve DNS once, pin the IP, block private networks
+require "resolv"
+
+def safe_fetch(url)
+  uri = URI.parse(url)
+  ip = Resolv.getaddress(uri.host)
+
+  # Block private/internal IPs
+  blocked = IPAddr.new(ip).private? || IPAddr.new(ip).loopback?
+  raise "Blocked: private network" if blocked
+
+  # Fetch with strict timeout and pinned IP
+  Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https",
+                  open_timeout: 5, read_timeout: 10, ipaddr: ip) do |http|
+    http.request(Net::HTTP::Get.new(uri))
+  end
+end
+```
+
+---
+
+## Command Injection Prevention
+
+Never interpolate user input into shell commands:
+
+```ruby
+# DANGEROUS — command injection
+system("convert #{params[:filename]} output.png")
+
+# SAFE — array form bypasses shell interpretation
+system("convert", params[:filename], "output.png")
+```
+
+---
+
+## Path Traversal Prevention
+
+```ruby
+# DANGEROUS — user can traverse directories
+File.read("uploads/#{params[:filename]}")
+
+# SAFE — strip directory components
+safe_name = File.basename(params[:filename])
+File.read(Rails.root.join("uploads", safe_name))
+```
+
+---
+
+## Open Redirect Prevention
+
+Validate redirect URLs against an allowlist:
+
+```ruby
+def safe_redirect(url)
+  uri = URI.parse(url)
+  if uri.host.nil? || uri.host == request.host
+    redirect_to url
+  else
+    redirect_to root_path
+  end
+end
+```
+
+---
+
+## Webhook Signature Validation
+
+Always validate webhook signatures from external services:
+
+```ruby
+def verify_webhook_signature!
+  payload = request.body.read
+  signature = request.headers["X-Signature"]
+  expected = OpenSSL::HMAC.hexdigest("SHA256", Rails.application.credentials.webhook_secret, payload)
+  head :unauthorized unless ActiveSupport::SecurityUtils.secure_compare(signature, expected)
+end
+```
+
+---
+
+## Outbound Request Timeouts
+
+Always set explicit timeouts on HTTP calls to external services. Unbounded requests can exhaust connection pools:
+
+```ruby
+Net::HTTP.start(uri.host, uri.port, use_ssl: true,
+                open_timeout: 5, read_timeout: 10) do |http|
+  http.request(request)
+end
+```
+
+---
+
 ## Secrets Management
 
 ### Rails Credentials
