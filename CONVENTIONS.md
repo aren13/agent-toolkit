@@ -39,7 +39,7 @@ Each prefix maps to exactly one domain. Check this table before creating new ski
 |--------|--------|-----------------|-----------------|
 | `git` | Git operations | `git` | `git-ship`, `git-fast`, `git-audit` |
 | `docs` | Documentation | `docs` | `docs-craft`, `docs-organize`, `docs-audit` |
-| `rails` | Rails conventions | `rails-way` | - |
+| `rails` | Rails conventions | `rails` | `rails-gen`, `rails-dev`, `rails-test` |
 | `draw` | Diagrams | `excalidraw-diagram` | - |
 | `peek` | Screen interaction | `peekaboo` | - |
 
