@@ -1,5 +1,5 @@
 ---
-skill_name: docs
+name: docs
 version: 1.0.0
 description: Documentation conventions, standards, naming rules, document types, templates, and quality criteria. Loaded as reference context when documentation standards are discussed.
 triggers:

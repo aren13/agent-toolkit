@@ -1,5 +1,5 @@
 ---
-skill_name: rails-dev
+name: rails-dev
 version: 1.0.0
 description: Start the Rails development server using bin/ds
 allowed-tools: Bash(bin/ds*), Bash(bin/dev*), Bash(bin/rails server*), Bash(rails server*), Bash(lsof -i*), Bash(kill *)

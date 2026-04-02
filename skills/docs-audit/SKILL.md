@@ -1,5 +1,5 @@
 ---
-skill_name: docs-audit
+name: docs-audit
 version: 1.0.0
 description: Audit documentation against docs base skill standards and produce actionable report
 allowed-tools: Read, Glob, Grep, Bash(wc *)

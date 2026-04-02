@@ -1,5 +1,5 @@
 ---
-skill_name: git-ship
+name: git-ship
 version: 1.0.0
 description: Full git workflow on current branch - analyze, commit, push, optional PR
 allowed-tools: Bash(git *), Bash(gh pr create:*)

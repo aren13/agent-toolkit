@@ -1,5 +1,5 @@
 ---
-skill_name: rails-gen
+name: rails-gen
 version: 1.0.0
 description: Generate Rails scaffold, model, controller, or migration with conventions baked in
 allowed-tools: Bash(rails generate:*), Bash(bin/rails generate:*), Bash(rails g:*), Bash(bin/rails g:*), Bash(rails db:migrate*), Bash(bin/rails db:migrate*), Read, Glob, Grep

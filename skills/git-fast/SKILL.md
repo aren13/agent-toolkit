@@ -1,5 +1,5 @@
 ---
-skill_name: git-fast
+name: git-fast
 version: 1.0.0
 description: Quick commit and push - no analysis, no ceremony
 allowed-tools: Bash(git *)

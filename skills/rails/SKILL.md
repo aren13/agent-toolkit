@@ -1,5 +1,5 @@
 ---
-skill_name: rails
+name: rails
 version: 1.0.0
 description: Ruby on Rails conventions, patterns, and best practices following the Rails Doctrine and the modern stack (Hotwire, Tailwind CSS, PostgreSQL). Loaded as reference context when Rails standards or architecture are discussed.
 triggers:

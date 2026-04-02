@@ -1,5 +1,5 @@
 ---
-skill_name: git-audit
+name: git-audit
 version: 1.0.0
 description: Audit repository health and provide executive summary with actionable recommendations
 allowed-tools: Bash(git *), Bash(gh *)

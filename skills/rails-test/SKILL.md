@@ -1,5 +1,5 @@
 ---
-skill_name: rails-test
+name: rails-test
 version: 1.0.0
 description: Run Rails test suite with proper flags and conventions
 allowed-tools: Bash(bin/rails test*), Bash(rails test*), Bash(ruby -Itest*), Bash(bin/rails db:test:prepare*), Bash(RAILS_ENV=test*), Read, Glob, Grep

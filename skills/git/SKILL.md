@@ -1,5 +1,5 @@
 ---
-skill_name: git
+name: git
 version: 1.0.0
 description: Git conventions, commit standards, branch naming, and PR templates. Loaded as reference context when git standards are discussed.
 triggers:

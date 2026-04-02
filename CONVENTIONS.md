@@ -101,6 +101,23 @@ triggers:
 
 ## Skill Structure
 
+### SKILL.md Frontmatter
+
+Every SKILL.md uses YAML frontmatter with these fields:
+
+```yaml
+---
+name: {skill-name}              # REQUIRED -- must use `name:`, not `skill_name:`
+version: 1.0.0
+description: One-line description
+triggers:                        # Reference skills only
+  - reference query
+allowed-tools: Tool1, Tool2      # Action skills only
+---
+```
+
+**Rule:** The field is `name`, not `skill_name`. Claude Code validates this at load time and warns on `skill_name`.
+
 ### In the project repo (source of truth)
 
 ```
