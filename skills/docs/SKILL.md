@@ -1,16 +1,14 @@
 ---
 skill_name: docs
 version: 1.0.0
-description: Documentation conventions, standards, naming rules, document types, templates, and quality criteria. Loaded automatically when working with documentation operations.
+description: Documentation conventions, standards, naming rules, document types, templates, and quality criteria. Loaded as reference context when documentation standards are discussed.
 triggers:
-  - create documentation
-  - audit documentation
-  - organize docs
-  - write docs
-  - review document
-  - standardize docs
-  - fix doc structure
   - documentation standards
+  - doc conventions
+  - naming conventions
+  - writing standards
+  - markdown standards
+  - document types
 ---
 
 # Docs

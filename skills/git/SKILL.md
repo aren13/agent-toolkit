@@ -1,16 +1,13 @@
 ---
 skill_name: git
 version: 1.0.0
-description: Git conventions, commit standards, branch naming, and PR templates. Loaded automatically when working with git operations.
+description: Git conventions, commit standards, branch naming, and PR templates. Loaded as reference context when git standards are discussed.
 triggers:
-  - manage git
-  - commit changes
-  - review and commit
-  - push changes
-  - create PR
-  - git workflow
-  - sync branch
-  - stash changes
+  - git conventions
+  - commit standards
+  - branch naming
+  - pr template
+  - git standards
 ---
 
 # Git
