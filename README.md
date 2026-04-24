@@ -12,6 +12,9 @@ A collection of scripts and utilities for setting up and managing infrastructure
 - [Project Structure](#project-structure)
 - [Scripts](#scripts)
   - [mbp-server-setup.sh](#mbp-server-setupsh)
+- [Claude Code](#claude-code)
+  - [Statusline](#statusline)
+  - [Hooks](#hooks)
 - [Skills](#skills)
 - [Installation](#installation)
 - [Contributing](#contributing)
@@ -122,6 +125,36 @@ The daemon auto-restarts on crash and persists across reboots. Logs are written 
 
 ---
 
+## Claude Code
+
+Shell-based integrations for the [Claude Code](https://docs.claude.com/en/docs/claude-code) CLI. All scripts are self-contained, auditable, and make no network calls.
+
+**Location:** `claude-code/`
+
+### Statusline
+
+A compact statusline renderer for the Claude Code TUI. Shows working directory, model, session duration, turn count, remaining context, token totals, spend, and git state (branch, dirty-file count, ahead/behind).
+
+```
+📁 agent-toolkit │ 🎭 Opus 4.7 │ ⏱ 1h23m │ 💬 47 │ 🔋 180k left │ ⬇️ 412k ⬆️ 38k │ 💰 $3.21 │ 🌿 main ⚡2 ↑1
+```
+
+Each segment is an isolated shell function, so removing or reordering them is a one-line edit. See [`claude-code/statusline/README.md`](claude-code/statusline/README.md) for install steps and customization.
+
+### Hooks
+
+A `Stop`-hook notifier that fires when Claude finishes a turn:
+
+- macOS notification banner (or Linux `notify-send`)
+- Terminal-tab title tag (`🔴 <session> DONE`) so you can spot completed sessions across windows
+- Optional text-to-speech announcement gated by a minimum elapsed time so fast turns stay silent
+
+Also included: `voice-on.sh` / `voice-off.sh` / `voice-status.sh` to toggle TTS without editing settings.
+
+Session names, TTS minimum duration, speaking rate, and the macOS terminal bundle ID are all configurable via environment variables -- no hardcoded assumptions about which terminal you use. See [`claude-code/hooks/README.md`](claude-code/hooks/README.md) for install steps and a complete `settings.json` example.
+
+---
+
 ## Installation
 
 Clone the repository:
@@ -137,6 +170,7 @@ cd agent-toolkit
 
 ```
 agent-toolkit/
+  claude-code/        -- Claude Code CLI integrations (statusline, hooks)
   scripts/            -- Automation and setup scripts
   skills/             -- Claude Code skills following {domain}-{action} convention
   CONVENTIONS.md      -- Universal naming convention specification
