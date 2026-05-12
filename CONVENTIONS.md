@@ -39,10 +39,13 @@ Each prefix maps to exactly one domain. Check this table before creating new ski
 |--------|--------|-----------------|-----------------|
 | `git` | Git operations | `git` | `git-ship`, `git-fast`, `git-audit` |
 | `docs` | Documentation | `docs` | `docs-craft`, `docs-organize`, `docs-audit` |
-| `rails` | Rails conventions | `rails` | `rails-gen`, `rails-dev`, `rails-test` |
+| `rails` | Rails conventions | `rails` | `rails-gen`, `rails-dev`, `rails-test`, `rails-test-audit`, `rails-test-full`, `rails-test-run` |
 | `vault` | Credential CRUD against self-hosted Bitwarden/Vaultwarden | `vault` | — (CLI lives inside the skill; invoke via `vault <subcommand>`) |
+| `kickoff` | New-project bootstrap (CLAUDE.md + git init + private GitHub repo) | `kickoff` | `kickoff` |
+| `automate` | Browser / UI automation tool routing | `automation-tool-router` | `automate` |
+| `expertise` | Catalog of domain expertise references | `expertise` | — |
 | `draw` | Diagrams | `excalidraw-diagram` | - |
-| `peek` | Screen interaction | `peekaboo` | - |
+| `peek` | Screen interaction (macOS) | `peekaboo` | - |
 
 **Reserved (collides with Claude Code built-ins):** `debug`, `batch`, `loop`, `simplify`
 

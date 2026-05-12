@@ -9,13 +9,15 @@ A collection of scripts and utilities for setting up and managing infrastructure
 - [Overview](#overview)
 - [Conventions](#conventions)
 - [Prerequisites](#prerequisites)
-- [Project Structure](#project-structure)
 - [Scripts](#scripts)
   - [mbp-server-setup.sh](#mbp-server-setupsh)
   - [install-vault.sh](#install-vaultsh)
+  - [sync.sh](#syncsh)
+- [Project Structure](#project-structure)
 - [Skills](#skills)
+  - [Available domains](#available-domains)
   - [vault — autonomous credential CRUD](#vault--autonomous-credential-crud)
-- [Installation](#installation)
+- [Deployment](#deployment)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -154,14 +156,32 @@ See [skills/vault/README.md](skills/vault/README.md) for full details on the tru
 
 ---
 
-## Installation
+### sync.sh
 
-Clone the repository:
+Source-of-truth deployer. Edits land in this repo, `sync.sh` rsyncs them into the right locations on the host.
+
+**Location:** `scripts/sync.sh`
+
+#### What it deploys
+
+| From repo | To machine | Notes |
+|-----------|-----------|-------|
+| `commands/*.md` | `~/.claude/commands/` | Slash command definitions |
+| `hooks/*.sh` | `~/.claude/hooks/` | Shell hooks (mode +x preserved) |
+| `skills/{name}/` (reference) | `~/.claude/skills/{name}/` AND `~/.agents/skills/{name}/` | Reference skills deploy to both Claude Code and OpenClaw when `~/.agents/skills/` exists |
+| `skills/{name}/` (action — has matching `commands/{name}.md`) | `~/.claude/skills/{name}/` (without SKILL.md) | Action skill body excludes SKILL.md since the command file registers it |
+| `prompt-shorthand-modes.md` | symlinked into `~/.claude/` | Speech-friendly shortcut reference |
+
+#### Usage
 
 ```bash
-git clone https://github.com/aren13/agent-toolkit.git
-cd agent-toolkit
+bash scripts/sync.sh            # deploy
+bash scripts/sync.sh --dry-run  # preview without writing
+bash scripts/sync.sh --delete   # mirror (removes files on dest not in source)
+bash scripts/sync.sh -v         # verbose rsync output
 ```
+
+`sync.sh` reports orphan skills (folder with no `SKILL.md` and no command file) and orphan commands (command file with no matching skill folder).
 
 ---
 
@@ -169,18 +189,38 @@ cd agent-toolkit
 
 ```
 agent-toolkit/
-  scripts/            -- Automation and setup scripts (mbp-server-setup, install-vault)
-  skills/             -- Claude Code skills following {domain}-{action} convention
-  dotfiles/           -- Shell helpers deployed by installers (e.g. bw-secrets.zsh)
-  CONVENTIONS.md      -- Universal naming convention specification
-  README.md           -- This file
+  CLAUDE.md                  -- Working notes for Claude (this repo is the
+                                source of truth for ~/.claude/ contents)
+  CONVENTIONS.md             -- Universal naming convention specification
+  README.md                  -- This file
+  prompt-shorthand-modes.md  -- Speech-friendly prompt mode shortcuts
+  scripts/                   -- Automation, setup, and sync scripts
+  commands/                  -- Slash command definitions ({domain}-{action}.md)
+  hooks/                     -- Shell hooks consumed by ~/.claude/settings.json
+  skills/                    -- Reference and action skill sources
+  dotfiles/                  -- Shell helpers deployed by installers
+                                (e.g. bw-secrets.zsh for the devenv flow)
+  .github/workflows/         -- CalVer auto-release on conventional commits
 ```
 
 ## Skills
 
-Skills follow the `{domain}-{action}` naming convention. The bare domain name (`git`, `doc`) is a reference skill containing standards and rules. Domain-prefixed names (`git-commit`, `doc-create`) are action skills that execute workflows using those standards.
+Skills follow the `{domain}-{action}` naming convention. The bare domain name (`git`, `docs`) is a **reference skill** containing standards and rules. Domain-prefixed names (`git-ship`, `docs-craft`) are **action skills** that execute workflows using those standards.
 
 See [CONVENTIONS.md](CONVENTIONS.md) for the full pattern and domain prefix registry.
+
+### Available domains
+
+| Domain | Reference skill | Action commands | Purpose |
+|---|---|---|---|
+| `git` | `git` | `git-ship`, `git-fast`, `git-audit` | Git operations with conventional-commit + branch-naming standards |
+| `docs` | `docs` | `docs-craft`, `docs-organize`, `docs-audit` | Documentation standards + executable doc workflows |
+| `rails` | `rails` | `rails-gen`, `rails-dev`, `rails-test`, `rails-test-audit`, `rails-test-full`, `rails-test-run` | Rails conventions (Hotwire, Tailwind, PostgreSQL) and test workflows |
+| `vault` | `vault` | — (CLI subcommands) | Autonomous credential CRUD against self-hosted Bitwarden / Vaultwarden |
+| `kickoff` | `kickoff` | `kickoff` | Bootstrap a new project (CLAUDE.md + git init + private GitHub repo) |
+| `automate` | `automation-tool-router` | `automate` | Route browser / UI automation tasks to the right tool (Playwright, agent-browser, Peekaboo) |
+| `expertise` | `expertise` | — | Catalog of domain expertise references for quick lookup |
+| `peek` | `peekaboo` | — | Screen interaction on macOS |
 
 ### vault — autonomous credential CRUD
 
@@ -204,16 +244,41 @@ Full docs in [skills/vault/README.md](skills/vault/README.md) and [skills/vault/
 
 ---
 
-## Installation
+## Deployment
 
-Clone the repository:
+The repo is the **source of truth** for `~/.claude/` (Claude Code) and shared reference skills for `~/.agents/` (OpenClaw). Per-machine bootstrap:
 
 ```bash
-git clone https://github.com/aren13/agent-toolkit.git
+# 1. Clone
+gh repo clone aren13/agent-toolkit
 cd agent-toolkit
+
+# 2. Install any standalone tools (one-shots, run once per Mac)
+bash scripts/install-vault.sh   # vault skill — Keychain + bw config + .zshrc
+bash scripts/mbp-server-setup.sh   # only on machines you want as headless servers
+
+# 3. Deploy skills, commands, and hooks
+bash scripts/sync.sh
 ```
 
-Scripts are standalone and have no external dependencies beyond macOS system tools.
+### Per-machine configuration
+
+Machine-specific values **never live in this repo**. Each installer (e.g. `install-vault.sh`) writes a config file under `~/.config/{tool}/` with the right values for that Mac. The deployed skill reads from that config file at runtime.
+
+Examples:
+
+| Tool | Config path | Holds |
+|---|---|---|
+| `vault` | `~/.config/vault-skill/config.sh` | `VAULT_BW_SERVER`, `VAULT_BW_EMAIL` |
+| (future) | `~/.config/{tool}/config.sh` | Same pattern |
+
+This keeps the repo public and identical across machines — secrets and identifiers live only on the host that needs them.
+
+### Two-agent deployment (OpenClaw + Claude Code)
+
+If `~/.agents/skills/` exists on a Mac (i.e. OpenClaw is installed), `sync.sh` automatically deploys reference skills to both `~/.claude/skills/` and `~/.agents/skills/`. Action skills stay Claude-only because their command files use Claude-specific `!`backtick`` dynamic-context syntax.
+
+Edit a skill once in the repo, run `sync.sh`, both agents see it.
 
 ---
 
