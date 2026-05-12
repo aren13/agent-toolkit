@@ -1,0 +1,14 @@
+# External symlinks — these point to /Users/ae/paperclip/ which lives outside
+# this repo and won't exist on other machines. The paperclip skills are
+# delivered by their own project, not by agent-toolkit.
+skills/paperclip
+skills/paperclip-create-agent
+skills/paperclip-create-plugin
+skills/para-memory-files
+
+# Per-machine config (vault skill et al.) — never in repo, written by installers
+.config/
+*.local
+
+# macOS noise
+.DS_Store
