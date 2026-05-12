@@ -1,0 +1,64 @@
+Split: 12 train, 8 test (holdout=0.4)
+
+============================================================
+Iteration 1/5
+Description: Pick the right browser or GUI automation tool — do not run automation directly, route to the correct tool first. Use when the user asks to automate a browser, scrape a website, run E2E tests, fill forms, take screenshots, profile web performance, intercept network traffic, generate PDFs from pages, control macOS apps or windows, bypass bot detection, or extract data from web pages. Triggers on keywords - browser automation, web scraping, E2E testing, UI testing, headless browser, screenshot automation, form fill, click automation, page automation, playwright, puppeteer, peekaboo, macOS automation, GUI automation, web testing, Lighthouse, Core Web Vitals, perf profiling, Firecrawl, Stagehand, agent-browser.
+============================================================
+Train: 18/36 correct, precision=100% recall=0% accuracy=50% (77.2s)
+  [FAIL] rate=0/3 expected=True: fill in the contact form at https://example.com/contact with
+  [FAIL] rate=0/3 expected=True: compare the pricing pages on stripe.com vs paypal.com side b
+  [FAIL] rate=0/3 expected=True: our staging login form sets a CSRF cookie — i wanna verify t
+  [FAIL] rate=0/3 expected=True: i need to scrape iphone 17 pro max prices from amazon.com.tr
+  [FAIL] rate=0/3 expected=True: send 'running 5min late' on imessage to my mom, her email is
+  [FAIL] rate=0/3 expected=True: the cloudflare turnstile keeps blocking my scraping script f
+  [PASS] rate=0/3 expected=False: review this puppeteer test file at tests/e2e/checkout.spec.t
+  [PASS] rate=0/3 expected=False: add lighthouse score badges to our project readme.md — deskt
+  [PASS] rate=0/3 expected=False: i pressed cmd-z too many times in figma and lost the work fr
+  [PASS] rate=0/3 expected=False: explain the difference between Stagehand and Playwright in 2
+  [PASS] rate=0/3 expected=False: rename all the files in ~/Documents/scans that match IMG_*.h
+  [PASS] rate=0/3 expected=False: explain how playwright's network interception works under th
+Test : 12/24 correct, precision=100% recall=0% accuracy=50% (0.0s)
+  [FAIL] rate=0/3 expected=True: open Calendar.app and create a meeting tomorrow at 3pm calle
+  [FAIL] rate=0/3 expected=True: wanna grab the front page of HN as markdown so i can read of
+  [FAIL] rate=0/3 expected=True: yo my landing page at fazla.com feels janky on mobile — can 
+  [FAIL] rate=0/3 expected=True: i'm getting a TypeError in the booking flow on production (b
+  [PASS] rate=0/3 expected=False: set up a github actions workflow that runs my playwright tes
+  [PASS] rate=0/3 expected=False: my puppeteer install is broken on m1 mac, error says 'failed
+  [PASS] rate=0/3 expected=False: i'm building a chrome extension that interacts with the DOM 
+  [PASS] rate=0/3 expected=False: draft a blog post arguing that headless browsers should be t
+
+Improving description...
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/ae/.claude/plugins/cache/claude-plugins-official/skill-creator/8f0d044f1242/skills/skill-creator/scripts/run_loop.py", line 332, in <module>
+    main()
+  File "/Users/ae/.claude/plugins/cache/claude-plugins-official/skill-creator/8f0d044f1242/skills/skill-creator/scripts/run_loop.py", line 297, in main
+    output = run_loop(
+             ^^^^^^^^^
+  File "/Users/ae/.claude/plugins/cache/claude-plugins-official/skill-creator/8f0d044f1242/skills/skill-creator/scripts/run_loop.py", line 202, in run_loop
+    new_description = improve_description(
+                      ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/ae/.claude/plugins/cache/claude-plugins-official/skill-creator/8f0d044f1242/skills/skill-creator/scripts/improve_description.py", line 114, in improve_description
+    response = client.messages.create(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/site-packages/anthropic/_utils/_utils.py", line 282, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/site-packages/anthropic/resources/messages/messages.py", line 932, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/site-packages/anthropic/_base_client.py", line 1361, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/site-packages/anthropic/_base_client.py", line 1055, in request
+    request = self._build_request(options, retries_taken=retries_taken)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/site-packages/anthropic/_base_client.py", line 520, in _build_request
+    headers = self._build_headers(options, retries_taken=retries_taken)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/site-packages/anthropic/_base_client.py", line 450, in _build_headers
+    self._validate_headers(headers_dict, custom_headers)
+  File "/opt/anaconda3/lib/python3.12/site-packages/anthropic/_client.py", line 196, in _validate_headers
+    raise TypeError(
+TypeError: "Could not resolve authentication method. Expected either api_key or auth_token to be set. Or for one of the `X-Api-Key` or `Authorization` headers to be explicitly omitted"

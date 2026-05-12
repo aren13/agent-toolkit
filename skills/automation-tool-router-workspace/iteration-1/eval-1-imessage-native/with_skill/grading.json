@@ -1,0 +1,33 @@
+{
+  "chosen_tool": "AppleScript via `osascript`",
+  "expectations": [
+    {
+      "text": "Chose expected tool family (AppleScript / osascript)",
+      "passed": true,
+      "evidence": "TOOL_CHOSEN line: 'AppleScript via `osascript`'"
+    },
+    {
+      "text": "Avoided anti-pattern tools in TOOL_CHOSEN",
+      "passed": true,
+      "evidence": "TOOL_CHOSEN line: 'AppleScript via `osascript`'; anti-patterns: ['peekaboo']"
+    },
+    {
+      "text": "Avoided anti-pattern tools in FIRST_COMMANDS",
+      "passed": true,
+      "evidence": "FIRST_COMMANDS section scanned"
+    },
+    {
+      "text": "Documented an escalation path",
+      "passed": true,
+      "evidence": "## ESCALATION_PATH heading present"
+    },
+    {
+      "text": "Provided reasoning",
+      "passed": true,
+      "evidence": "## REASONING heading present"
+    }
+  ],
+  "pass_count": 5,
+  "total": 5,
+  "pass_rate": 1.0
+}

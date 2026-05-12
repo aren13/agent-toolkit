@@ -1,57 +1,73 @@
 ---
 name: rails-test
-version: 1.0.0
-description: Run Rails test suite with proper flags and conventions
-allowed-tools: Bash(bin/rails test*), Bash(rails test*), Bash(ruby -Itest*), Bash(bin/rails db:test:prepare*), Bash(RAILS_ENV=test*), Read, Glob, Grep
-argument: target
+description: Use whenever the user mentions running tests, test failures, test coverage, writing specs, or pushing a Rails branch. Selects the right rspec invocation, audits diffs against the test suite, and gates pre-push. Detects RSpec/Minitest from Gemfile. For TDD philosophy see superpowers:test-driven-development.
 ---
 
-## Context
+# Rails Test
 
-- Test framework: !`grep -E 'minitest|rspec' Gemfile 2>/dev/null | head -3`
-- Test directory: !`ls -d test/ spec/ 2>/dev/null`
-- Recent failures: !`test -f tmp/failures.txt && cat tmp/failures.txt 2>/dev/null || echo "no cached failures"`
+You are a Rails testing expert. The user's productivity depends on tests being fast, focused, and trustworthy. Default to running the smallest spec set that proves the change works.
 
-## User Target
+## Three commands
 
-$ARGUMENTS
+| Command            | When                                                  |
+|--------------------|-------------------------------------------------------|
+| /rails-test-run    | "run tests" — smart selection (failures→diff→deps)    |
+| /rails-test-audit  | Pre-push or "are these changes tested?" gate          |
+| /rails-test-full   | Explicit full suite (escape hatch)                    |
 
-## Your Task
+## Detection
+- RSpec: Gemfile contains `rspec-rails` → use `bundle exec rspec`.
+- Minitest: no rspec gem → use `bin/rails test`. See `references/minitest.md`.
+- This skill is RSpec-first.
 
-Run the Rails test suite. Follow the rails reference skill at `~/.claude/skills/rails/SKILL.md` for testing conventions.
+## When NOT to run tests
+- User asks a question about test code → answer it, don't run.
+- User mid-edit (file modified <10s ago) → wait or ask.
+- After /rails-test-audit just passed and diff unchanged → say so, skip.
 
-### Rules
+## Run-time conventions
+1. With no args, follow the selection algorithm:
+   failures-first → diff-based + dependents → graceful exit (don't auto-full).
+2. Always print a one-line "selection reason" before running.
+3. After every run: report pass/fail count + slowest 5 + next-action hint on failure.
 
-1. **Use `bin/rails test`** for Minitest (the Rails default). Use `bundle exec rspec` only if the project uses RSpec.
-2. **Prepare the test database** if migrations are pending: `bin/rails db:test:prepare`
-3. **Run the right scope** based on `$ARGUMENTS`
-4. **Report failures clearly** with file, line, and assertion message
-5. **Use `data-test-id` attributes** for system test selectors -- not HTML structure or CSS classes
-6. **WebMock must remain enabled** -- no real HTTP calls in tests. Use VCR cassettes for outbound APIs
+Full algorithm and arg vocabulary: `references/run-selection.md`.
 
-### Target Parsing
+## Audit conventions
+- Hard fails: `spec_missing`, `spec_empty`, `no_real_expectations`, `diff_coverage <50%`.
+- Warns: `tautological_expect`, `mock_heavy_ratio`, `factory_no_db_assert`, `pending_or_skipped`, `untested_branch`, `slowest_spec_regression`.
+- Cache result keyed by diff SHA; valid 5 min.
+- Output Markdown so it pastes into PRs.
 
-Parse `$ARGUMENTS` to determine what to test:
+Full check list and thresholds: `references/audit.md`.
 
-| Target | Command |
-|--------|---------|
-| (empty) | `bin/rails test` -- run all tests |
-| `models` | `bin/rails test test/models/` |
-| `controllers` | `bin/rails test test/controllers/` |
-| `system` | `bin/rails test:system` |
-| `integration` | `bin/rails test test/integration/` |
-| specific file | `bin/rails test test/models/user_test.rb` |
-| specific test | `bin/rails test test/models/user_test.rb:42` |
-| `failed` | `bin/rails test --failures` -- rerun only failures |
-| `seed:NNNN` | `bin/rails test --seed NNNN` -- reproduce order-dependent failure |
+## Writing specs
+- One assertion per `it` (clear failure messages).
+- FactoryBot over fixtures; prefer `build` over `create` when you can.
+- Use `let_it_be` (test-prof) for shared expensive setup.
+- WebMock all external HTTP; never let net through.
+- System specs only for critical user flows; default to request specs.
+- Use `:focus` while iterating, remove before committing.
 
-### Workflow
+Patterns and anti-patterns: `references/rspec-conventions.md`, `references/factories.md`, `references/system-specs.md`.
 
-1. Check for pending migrations, prepare test DB if needed
-2. Run the targeted tests
-3. On failure: read the failing test file to understand context, report the failure with file path, line number, expected vs actual
-4. On success: report pass count and timing
+## Composition
+- For TDD philosophy + write-test-first discipline: invoke `superpowers:test-driven-development`.
+- For Rails conventions broader than tests: invoke the `rails` skill.
+- For bug-fix workflow that includes tests: `bug-fix` skill calls `/rails-test-audit` before opening a PR.
 
-### Output
+## Anti-patterns (audit will reject)
+- `update_column` / `update_attribute` in specs (bypasses validations).
+- `before(:all)` without database transaction (state leaks).
+- `expect(true).to be_truthy` and friends (tautological).
+- `pending` / `skip` / `xit` / `xdescribe` left in committed specs.
+- Stubbing the method under test.
+- `Net::HTTP` without WebMock stub.
 
-Report: tests run, pass/fail count, timing. If failures, show the specific assertion messages with file:line references.
+## See also
+- references/run-selection.md
+- references/audit.md
+- references/rspec-conventions.md
+- references/factories.md
+- references/system-specs.md
+- references/minitest.md  (only if Gemfile has minitest)

@@ -1,0 +1,33 @@
+{
+  "chosen_tool": "Playwright CLI",
+  "expectations": [
+    {
+      "text": "Chose expected tool family (Playwright CLI)",
+      "passed": true,
+      "evidence": "TOOL_CHOSEN line: 'Playwright CLI'"
+    },
+    {
+      "text": "Avoided anti-pattern tools in TOOL_CHOSEN",
+      "passed": true,
+      "evidence": "TOOL_CHOSEN line: 'Playwright CLI'; anti-patterns: ['mcp__playwright', 'playwright-mcp', 'playwright_mcp']"
+    },
+    {
+      "text": "Avoided anti-pattern tools in FIRST_COMMANDS",
+      "passed": true,
+      "evidence": "FIRST_COMMANDS section scanned"
+    },
+    {
+      "text": "Documented an escalation path",
+      "passed": true,
+      "evidence": "## ESCALATION_PATH heading present"
+    },
+    {
+      "text": "Provided reasoning",
+      "passed": true,
+      "evidence": "## REASONING heading present"
+    }
+  ],
+  "pass_count": 5,
+  "total": 5,
+  "pass_rate": 1.0
+}

@@ -1,0 +1,109 @@
+{
+  "skill_name": "automation-tool-router",
+  "iteration": 1,
+  "configurations": {
+    "with_skill": {
+      "pass_rate": 1.0,
+      "tokens": {
+        "mean": 14612.6,
+        "min": 14446,
+        "max": 14860
+      },
+      "duration_ms": {
+        "mean": 30262.4,
+        "min": 27184,
+        "max": 34972
+      }
+    },
+    "without_skill": {
+      "pass_rate": 0.6,
+      "tokens": {
+        "mean": 12055.4,
+        "min": 11881,
+        "max": 12409
+      },
+      "duration_ms": {
+        "mean": 27030.2,
+        "min": 23148,
+        "max": 32270
+      }
+    }
+  },
+  "delta": {
+    "pass_rate": 0.4,
+    "extra_tokens_with_skill": 2557.2,
+    "extra_duration_ms_with_skill": 3232.2
+  },
+  "per_eval": {
+    "eval-0-web-default/with_skill": {
+      "tokens": 14538,
+      "duration_ms": 27869,
+      "chosen_tool": "agent-browser",
+      "pass_rate": 1.0,
+      "passed_assertions": "5/5"
+    },
+    "eval-0-web-default/without_skill": {
+      "tokens": 11887,
+      "duration_ms": 23148,
+      "chosen_tool": "mcp__playwright__browser_navigate",
+      "pass_rate": 0.4,
+      "passed_assertions": "2/5"
+    },
+    "eval-1-imessage-native/with_skill": {
+      "tokens": 14446,
+      "duration_ms": 27184,
+      "chosen_tool": "AppleScript via `osascript`",
+      "pass_rate": 1.0,
+      "passed_assertions": "5/5"
+    },
+    "eval-1-imessage-native/without_skill": {
+      "tokens": 11939,
+      "duration_ms": 26070,
+      "chosen_tool": "osascript (AppleScript)",
+      "pass_rate": 1.0,
+      "passed_assertions": "5/5"
+    },
+    "eval-2-perf-profiling/with_skill": {
+      "tokens": 14729,
+      "duration_ms": 34972,
+      "chosen_tool": "chrome-devtools-mcp",
+      "pass_rate": 1.0,
+      "passed_assertions": "5/5"
+    },
+    "eval-2-perf-profiling/without_skill": {
+      "tokens": 12409,
+      "duration_ms": 32270,
+      "chosen_tool": "mcp__playwright__browser_navigate (Playwright MCP)",
+      "pass_rate": 0.4,
+      "passed_assertions": "2/5"
+    },
+    "eval-3-pure-extraction/with_skill": {
+      "tokens": 14490,
+      "duration_ms": 27714,
+      "chosen_tool": "Firecrawl",
+      "pass_rate": 1.0,
+      "passed_assertions": "5/5"
+    },
+    "eval-3-pure-extraction/without_skill": {
+      "tokens": 11881,
+      "duration_ms": 24481,
+      "chosen_tool": "mcp__fetch__fetch",
+      "pass_rate": 0.8,
+      "passed_assertions": "4/5"
+    },
+    "eval-4-network-intercept/with_skill": {
+      "tokens": 14860,
+      "duration_ms": 33573,
+      "chosen_tool": "Playwright CLI",
+      "pass_rate": 1.0,
+      "passed_assertions": "5/5"
+    },
+    "eval-4-network-intercept/without_skill": {
+      "tokens": 12161,
+      "duration_ms": 29182,
+      "chosen_tool": "mcp__playwright__browser_network_requests",
+      "pass_rate": 0.4,
+      "passed_assertions": "2/5"
+    }
+  }
+}

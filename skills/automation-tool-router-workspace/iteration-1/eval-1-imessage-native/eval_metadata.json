@@ -1,0 +1,7 @@
+{
+  "eval_id": 1,
+  "eval_name": "imessage-native",
+  "prompt": "Send an iMessage to my mom that says 'running late, be there in 15'. Her email is mom@example.com.",
+  "expected_tool": "AppleScript via osascript",
+  "assertions": []
+}

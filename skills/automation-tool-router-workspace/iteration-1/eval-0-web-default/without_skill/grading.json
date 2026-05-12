@@ -1,0 +1,33 @@
+{
+  "chosen_tool": "mcp__playwright__browser_navigate",
+  "expectations": [
+    {
+      "text": "Chose expected tool family (agent-browser)",
+      "passed": false,
+      "evidence": "TOOL_CHOSEN line: 'mcp__playwright__browser_navigate'"
+    },
+    {
+      "text": "Avoided anti-pattern tools in TOOL_CHOSEN",
+      "passed": false,
+      "evidence": "TOOL_CHOSEN line: 'mcp__playwright__browser_navigate'; anti-patterns: ['playwright-mcp', 'playwright_mcp', 'mcp__playwright']"
+    },
+    {
+      "text": "Avoided anti-pattern tools in FIRST_COMMANDS",
+      "passed": false,
+      "evidence": "FIRST_COMMANDS section scanned"
+    },
+    {
+      "text": "Documented an escalation path",
+      "passed": true,
+      "evidence": "## ESCALATION_PATH heading present"
+    },
+    {
+      "text": "Provided reasoning",
+      "passed": true,
+      "evidence": "## REASONING heading present"
+    }
+  ],
+  "pass_count": 2,
+  "total": 5,
+  "pass_rate": 0.4
+}

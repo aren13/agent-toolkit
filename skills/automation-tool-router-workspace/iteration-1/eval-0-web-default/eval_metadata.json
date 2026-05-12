@@ -1,0 +1,7 @@
+{
+  "eval_id": 0,
+  "eval_name": "web-default",
+  "prompt": "I want to track the price of the iPhone 17 Pro Max 256GB on amazon.com.tr. Get me the current price in TL and which seller is offering it. The page is https://www.amazon.com.tr — search from there.",
+  "expected_tool": "agent-browser",
+  "assertions": []
+}

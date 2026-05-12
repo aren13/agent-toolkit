@@ -1,0 +1,7 @@
+{
+  "eval_id": 4,
+  "eval_name": "network-intercept",
+  "prompt": "Our staging login form at https://staging.acme.test/login should set a CSRF cookie when the user submits credentials. I need to verify the cookie is being set correctly with the right HttpOnly and SameSite flags. Watch the network during a login attempt.",
+  "expected_tool": "Playwright CLI",
+  "assertions": []
+}

@@ -1,0 +1,82 @@
+[
+  {
+    "query": "i need to scrape iphone 17 pro max prices from amazon.com.tr — get me the lira amount and the seller name. should i use playwright or what?",
+    "should_trigger": true
+  },
+  {
+    "query": "send 'running 5min late' on imessage to my mom, her email is mom@gmail.com",
+    "should_trigger": true
+  },
+  {
+    "query": "yo my landing page at fazla.com feels janky on mobile — can you figure out what's killing the LCP? need core web vitals data",
+    "should_trigger": true
+  },
+  {
+    "query": "wanna grab the front page of HN as markdown so i can read offline later. just titles + scores + discussion links",
+    "should_trigger": true
+  },
+  {
+    "query": "our staging login form sets a CSRF cookie — i wanna verify the HttpOnly and SameSite flags are right. need to watch network during login at https://staging.acme.test/login",
+    "should_trigger": true
+  },
+  {
+    "query": "the cloudflare turnstile keeps blocking my scraping script for ticketmaster.com — anything that gets through bot detection?",
+    "should_trigger": true
+  },
+  {
+    "query": "fill in the contact form at https://example.com/contact with name=Arda email=ardaeren13@gmail.com message='hello' — just automate the whole thing end to end",
+    "should_trigger": true
+  },
+  {
+    "query": "open Calendar.app and create a meeting tomorrow at 3pm called 'sync with mom'",
+    "should_trigger": true
+  },
+  {
+    "query": "i'm getting a TypeError in the booking flow on production (booking.com.tr/checkout) — can you click through and reproduce it, tell me which step throws",
+    "should_trigger": true
+  },
+  {
+    "query": "compare the pricing pages on stripe.com vs paypal.com side by side — screenshot both at desktop+mobile sizes, drop them in /tmp/",
+    "should_trigger": true
+  },
+  {
+    "query": "explain how playwright's network interception works under the hood — i'm curious about the CDP plumbing",
+    "should_trigger": false
+  },
+  {
+    "query": "review this puppeteer test file at tests/e2e/checkout.spec.ts and tell me if there are any flaky patterns or anti-patterns",
+    "should_trigger": false
+  },
+  {
+    "query": "draft a blog post arguing that headless browsers should be the default for E2E testing instead of screenshot-based tools",
+    "should_trigger": false
+  },
+  {
+    "query": "set up a github actions workflow that runs my playwright tests on every PR to main, with sharding across 4 workers",
+    "should_trigger": false
+  },
+  {
+    "query": "i'm building a chrome extension that interacts with the DOM on github.com — what's the right manifest v3 permission for content scripts on a specific origin?",
+    "should_trigger": false
+  },
+  {
+    "query": "my puppeteer install is broken on m1 mac, error says 'failed to fetch chromium binary' — what env var do i need",
+    "should_trigger": false
+  },
+  {
+    "query": "add lighthouse score badges to our project readme.md — desktop + mobile, fetch live from a github action",
+    "should_trigger": false
+  },
+  {
+    "query": "explain the difference between Stagehand and Playwright in 2 paragraphs for a slack post i'm writing",
+    "should_trigger": false
+  },
+  {
+    "query": "i pressed cmd-z too many times in figma and lost the work from the last hour — is there any way to recover",
+    "should_trigger": false
+  },
+  {
+    "query": "rename all the files in ~/Documents/scans that match IMG_*.heic to scan-{date}-{n}.heic — write a shell script",
+    "should_trigger": false
+  }
+]

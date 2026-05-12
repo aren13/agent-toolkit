@@ -18,6 +18,12 @@ Speech-to-text friendly shortcuts for AI coding assistants. Say `[word] mode` in
 | **prove mode** | Define explicit success criteria, write tests/checks, run them, and show green results before declaring done. |
 | **clamp mode** | Keep looping fix → test → fix until zero failures. Do not ask if you should continue — just keep going. |
 
+## Design & UI
+
+| Shorthand | What it triggers |
+|-----------|-----------------|
+| **design mode** | Activate the `/ui-ux-pro-max` skill AND load the project design system (`design-system/MASTER.md` + any page-specific override from `design-system/pages/`). All UI work must comply with the design system tokens (colors, typography, spacing, borders, shadows, icons). Check the page override file first — if it exists, its rules override the Master. If not, use Master exclusively. Run the pre-delivery checklist from MASTER.md before delivering. |
+
 ## Combos
 
 | Shorthand | What it triggers |

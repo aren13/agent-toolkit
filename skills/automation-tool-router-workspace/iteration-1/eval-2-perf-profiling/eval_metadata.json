@@ -1,0 +1,7 @@
+{
+  "eval_id": 2,
+  "eval_name": "perf-profiling",
+  "prompt": "I'm getting complaints that fazla.com loads slowly on mobile. I want to know what's killing the LCP and any other Core Web Vitals issues. Run a perf trace and tell me the top bottlenecks.",
+  "expected_tool": "chrome-devtools-mcp",
+  "assertions": []
+}
