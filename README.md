@@ -12,7 +12,9 @@ A collection of scripts and utilities for setting up and managing infrastructure
 - [Project Structure](#project-structure)
 - [Scripts](#scripts)
   - [mbp-server-setup.sh](#mbp-server-setupsh)
+  - [install-vault.sh](#install-vaultsh)
 - [Skills](#skills)
+  - [vault — autonomous credential CRUD](#vault--autonomous-credential-crud)
 - [Installation](#installation)
 - [Contributing](#contributing)
 - [License](#license)
@@ -122,6 +124,36 @@ The daemon auto-restarts on crash and persists across reboots. Logs are written 
 
 ---
 
+### install-vault.sh
+
+Deploys the `vault` skill (autonomous Bitwarden / Vaultwarden CRUD for Claude Code) on this Mac.
+
+**Location:** `scripts/install-vault.sh`
+
+#### What It Does
+
+| Step | Action |
+|------|--------|
+| 1 | Installs `bitwarden-cli` and `jq` via Homebrew if missing |
+| 2 | Prompts for server URL + email, writes `~/.config/vault-skill/config.sh` |
+| 3 | Copies `skills/vault/` into `~/.claude/skills/vault/` (skill + CLI scripts) |
+| 4 | Copies `dotfiles/bw-secrets.zsh` into `~/.config/bw-secrets.zsh` |
+| 5 | Idempotently adds `source` + `PATH` lines to `~/.zshrc` |
+| 6 | Points `bw` CLI at the configured server |
+| 7 | Prints the manual steps for storing master password + API key in macOS Keychain |
+
+#### Usage
+
+```bash
+bash scripts/install-vault.sh
+```
+
+After it finishes, follow the printed Keychain steps (master password + API key), then verify with `vault setup`.
+
+See [skills/vault/README.md](skills/vault/README.md) for full details on the trust model, rotation, and recovery.
+
+---
+
 ## Installation
 
 Clone the repository:
@@ -137,8 +169,9 @@ cd agent-toolkit
 
 ```
 agent-toolkit/
-  scripts/            -- Automation and setup scripts
+  scripts/            -- Automation and setup scripts (mbp-server-setup, install-vault)
   skills/             -- Claude Code skills following {domain}-{action} convention
+  dotfiles/           -- Shell helpers deployed by installers (e.g. bw-secrets.zsh)
   CONVENTIONS.md      -- Universal naming convention specification
   README.md           -- This file
 ```
@@ -148,6 +181,26 @@ agent-toolkit/
 Skills follow the `{domain}-{action}` naming convention. The bare domain name (`git`, `doc`) is a reference skill containing standards and rules. Domain-prefixed names (`git-commit`, `doc-create`) are action skills that execute workflows using those standards.
 
 See [CONVENTIONS.md](CONVENTIONS.md) for the full pattern and domain prefix registry.
+
+### vault — autonomous credential CRUD
+
+Skill that lets Claude (or you, from the shell) read, write, rotate, and bulk-load credentials in a self-hosted Bitwarden or Vaultwarden vault without ever prompting for the master password during routine use.
+
+- **Server-agnostic** — works with official Bitwarden self-hosted, Vaultwarden, or anything `bw config server` accepts.
+- **Autonomous recovery** — silently re-unlocks via macOS Keychain (master password) and re-logs in via personal API key (also Keychain) when the session expires or is logged out.
+- **CLI shape** — `vault get NAME [--field …]`, `vault set-field`, `vault create`, `vault env`, plus `doctor`/`setup`/`status` for diagnostics.
+- **Convention over configuration** — one Login item per service, one Note + Hidden custom fields per env context. Avoid legacy KEY=value-in-notes.
+- **Audit log** — every write is timestamped in `~/.cache/vault-audit.log` (action + item id, never the value).
+
+#### Quick install
+
+```bash
+bash scripts/install-vault.sh
+# then follow the printed steps to populate macOS Keychain
+vault setup    # verifies all 8 checks
+```
+
+Full docs in [skills/vault/README.md](skills/vault/README.md) and [skills/vault/SKILL.md](skills/vault/SKILL.md).
 
 ---
 
